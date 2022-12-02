@@ -6,110 +6,102 @@ output: pdf_document
 
 A running R markdown looking at 2022 NFL data using the `nflfastR` package.
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE)
+```
+
+## Loading packages and data
+
 ```{r Load packages + data, warning=FALSE, message=FALSE}
 library(tidyverse)
 library(ggrepel)
 library(nflreadr)
 library(nflplotR)
-stats2022 <- load_player_stats(2022)
-pbp2022 <- load_pbp(2022)
-stats2020_22 <- load_player_stats(2020:2022)
+stats2022 <- load_player_stats(2022) %>% 
+  mutate(year = 2022)
+pbp2022 <- load_pbp(2022) %>% 
+  mutate(year = 2022)
+stats2021 <- load_player_stats(2021) %>% 
+  mutate(year = 2021)
+pbp2021 <- load_pbp(2021) %>% 
+  mutate(year = 2021)
+stats_21_22 <- rbind(stats2022, stats2021)
+pbp_21_22 <- rbind(pbp2022, pbp2021)
 ```
 
-```{r 2022 Week 7 Target/Carries Leaders, warning=FALSE, message=FALSE}
-week7_carry_leaders <- stats2022 %>% 
-  filter(week == 7) %>% 
+# 2022 NFL Data Exploration
+
+```{r 2022 Week 12 Target/Carries Leaders, warning=FALSE, message=FALSE}
+week12_carry_leaders <- stats2022 %>% 
+  filter(week == 12) %>% 
   arrange(desc(carries)) %>% 
   select(player_name, position, carries, rushing_yards, rushing_epa, rushing_tds)
-week7_rb_target_leaders <- stats2022 %>% 
-  filter(week == 7,  position == "RB") %>% 
+week12_rb_target_leaders <- stats2022 %>% 
+  filter(week == 12,  position == "RB") %>% 
   arrange(desc(targets)) %>% 
   select(player_name, position, targets, receptions, receiving_epa, target_share)
-week7_wr_target_leaders <- stats2022 %>% 
-  filter(week == 7,  position == "WR") %>% 
+week12_wr_target_leaders <- stats2022 %>% 
+  filter(week == 12,  position == "WR") %>% 
   arrange(desc(targets)) %>% 
   select(player_name, position, targets, receptions, receiving_epa, target_share)
-week7_te_target_leaders <- stats2022 %>% 
-  filter(week == 7,  position == "TE") %>% 
+week12_te_target_leaders <- stats2022 %>% 
+  filter(week == 12,  position == "TE") %>% 
   arrange(desc(targets), desc(target_share)) %>% 
   select(player_name, position, targets, receptions, receiving_epa, target_share)
-head(week7_carry_leaders, 20)
-head(week7_rb_target_leaders, 20)
-head(week7_wr_target_leaders, 20)
-head(week7_te_target_leaders, 20)
+head(week12_carry_leaders, 20)
+head(week12_rb_target_leaders, 20)
+head(week12_wr_target_leaders, 20)
+head(week12_te_target_leaders, 20)
 ```
 
-```{r Week 7 Positional Leaders, warning=FALSE, message=FALSE}
-week7_passing_leaders <- stats2022 %>% 
-  filter(week == 7, position == "QB") %>% 
+```{r Week 12 Positional Leaders, warning=FALSE, message=FALSE}
+week12_passing_leaders <- stats2022 %>% 
+  filter(week == 12, position == "QB") %>% 
   arrange(desc(passing_epa)) %>% 
   select(player_name, position, passing_epa, passing_yards, completions, passing_tds)
-week7_rushing_leaders <- stats2022 %>% 
-  filter(week == 7, position == "RB") %>% 
+week12_rushing_leaders <- stats2022 %>% 
+  filter(week == 12, position == "RB") %>% 
   arrange(desc(rushing_epa)) %>% 
   select(player_name, position, rushing_epa, rushing_yards, carries, rushing_tds)
-week7_receiving_leaders <- stats2022 %>% 
-  filter(week == 7) %>% 
+week12_receiving_leaders <- stats2022 %>% 
+  filter(week == 12) %>% 
   arrange(desc(receiving_epa)) %>% 
   select(player_name, position, receiving_epa, receiving_yards, targets, receptions, receiving_tds)
-head(week7_passing_leaders, 20)
-head(week7_rushing_leaders, 20)
-head(week7_receiving_leaders, 20)
+head(week12_passing_leaders, 20)
+head(week12_rushing_leaders, 20)
+head(week12_receiving_leaders, 20)
 ```
 
-```{r Week 10 }
-pbp_2022 <- load_pbp(2022)
-week10_pbp <- pbp_2022 %>% 
-  filter(week == 10) %>% 
+```{r Week 12}
+week12_pbp <- pbp2022 %>% 
+  filter(week == 12) %>% 
   arrange(desc(yards_gained)) %>% 
   select(yards_gained, posteam)
-head(week10_pbp, 10)
+head(week12_pbp, 10)
 ```
 
 ```{r}
-week10_carry_leaders <- stats2022 %>% 
-  filter(week == 10) %>% 
-  arrange(desc(carries)) %>% 
-  select(player_name, position, carries, rushing_yards, rushing_epa, rushing_tds)
-week10_rb_target_leaders <- stats2022 %>% 
-  filter(week == 10,  position == "RB") %>% 
-  arrange(desc(targets)) %>% 
-  select(player_name, position, targets, receptions, receiving_epa, target_share)
-week10_wr_target_leaders <- stats2022 %>% 
-  filter(week == 10,  position == "WR") %>% 
-  arrange(desc(targets)) %>% 
-  select(player_name, position, targets, receptions, receiving_epa, target_share)
-week10_te_target_leaders <- stats2022 %>% 
-  filter(week == 10,  position == "TE") %>% 
-  arrange(desc(targets), desc(target_share)) %>% 
-  select(player_name, position, targets, receptions, receiving_epa, target_share)
-head(week10_carry_leaders, 20)
-head(week10_rb_target_leaders, 20)
-head(week10_wr_target_leaders, 20)
-head(week10_te_target_leaders, 20)
-```
-
-```{r}
-stats2022 %>% filter(week == 10 & targets > 3 & position == "TE") %>% 
+stats2022 %>% filter(week == 12 & targets > 3 & position == "TE") %>% 
   ggplot(aes(x = receiving_epa, y = receptions, label = player_name)) +
   geom_text(check_overlap = TRUE) + 
   labs(title = "TE Receiving EPA ")
 ```
 
 ```{r}
-stats2022 %>% filter(week == 10 & targets > 3 & position == "WR") %>% 
+stats2022 %>% filter(week == 12 & targets > 3 & position == "WR") %>% 
   ggplot(aes(x = receiving_epa, y = receptions, label = player_name)) +
   geom_text(check_overlap = TRUE) + 
   labs(title = "WR Receiving EPA ")
 ```
 
 ```{r}
-stats2022 %>% filter(week == 10 & carries > 15 & position == "RB") %>% 
+stats2022 %>% filter(week == 12 & carries > 10 & position == "RB") %>% 
   ggplot(aes(x = rushing_epa, y = carries, label = player_name)) +
   geom_text(check_overlap = TRUE) + 
   labs(title = "RB Rushing EPA ")
 ```
-
 
 # Mean Pass on Neutral Plays
 
@@ -153,41 +145,10 @@ qbs <- pbp %>%
   left_join(load_teams(), by = c('team' = 'team_abbr'))
 ```
 
-```{r example QB EPA graph}
-qbs %>%
-  ggplot(aes(x = cpoe, y = epa)) +
-  #horizontal line with mean EPA
-  geom_hline(yintercept = mean(qbs$epa), color = "red", linetype = "dashed", alpha=0.5) +
-  #vertical line with mean CPOE
-  geom_vline(xintercept =  mean(qbs$cpoe), color = "red", linetype = "dashed", alpha=0.5) +
-  #add points for the QBs with the right colors
-  #cex controls point size and alpha the transparency (alpha = 1 is normal)
-  geom_point(color = qbs$team_color, cex=qbs$n_plays / 350, alpha = .6) +
-  #add names using ggrepel, which tries to make them not overlap
-  geom_text_repel(aes(label=name)) +
-  #add a smooth line fitting cpoe + epa
-  stat_smooth(geom='line', alpha=0.5, se=FALSE, method='lm')+
-  #titles and caption
-  labs(x = "Completion % above expected (CPOE)",
-       y = "EPA per play (passes, rushes, and penalties)",
-       title = "Quarterback Efficiency, 2017 - 2021",
-       caption = "Data: @nflfastR") +
-  #uses the black and white ggplot theme
-  theme_bw() +
-  #center title with hjust = 0.5
-  theme(
-    plot.title = element_text(size = 14, hjust = 0.5, face = "bold")
-  ) +
-  #make ticks look nice
-  #if this doesn't work, `install.packages('scales')`
-  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
-```
-
 # 2022 NFL QB EPA
 
 ```{r}
-qb_2022 <- pbp_2022 %>% 
+qb_2022 <- pbp2022 %>% 
   filter(!is.na(epa)) %>% 
   group_by(id, name) %>%
   summarize(
@@ -224,7 +185,7 @@ qb_2022 %>%
 # Week 11 Jalen Hurts
 
 ```{r}
-jalen_epa <- pbp_2022 %>% 
+jalen_epa <- pbp2022 %>% 
   filter(name == "J.Hurts" & play_type == c("run", "pass")) %>% 
   group_by(week, play_type) %>% 
   summarise(total_epa = sum(epa))
@@ -243,10 +204,105 @@ jalen_epa %>%
 # Week 11 TE EPA
 
 ```{r}
-stats2022 %>% filter(week == 11 & targets > 3 & position == "TE") %>% 
+stats2022 %>% filter(week == 12 & targets > 3 & position == "TE") %>% 
   ggplot(aes(x = receiving_epa, y = receptions, label = player_name)) +
   geom_text(check_overlap = TRUE) + 
   labs(title = "TE Receiving EPA ")
+```
+
+# 4th Down 
+
+``` {r } 
+team_4th <- pbp2022 %>% 
+  filter(down == 4 & (play_type == "run" | play_type == "pass")) %>% 
+  filter(wp > 0.02 & wp < 0.98) %>% 
+  group_by(posteam) %>% 
+  summarise(avg_yds_to_go = mean(ydstogo),
+            avg_field_pos = mean(yardline_100),
+            count = n(),
+            success_rate = sum(fourth_down_converted) / count,
+            avg_gained = sum(yards_gained) / count) %>% 
+  arrange(desc(success_rate))
+team_4th
+```
+
+```{r}
+ggplot(team_4th, aes(x = success_rate, y = avg_gained)) +
+  geom_nfl_logos(aes(team_abbr = posteam), width = team_4th$count / 300, alpha = 0.75) +
+  geom_hline(yintercept = mean(team_4th$avg_gained), color = "red", linetype = "dashed", alpha=0.5) +
+  geom_vline(xintercept =  mean(team_4th$success_rate), color = "red", linetype = "dashed", alpha=0.5) +
+  labs(title = "4th Down Success vs. Average Yards Gained on 4th Down",
+       subtitle = "2022 NFL Games, WP between 0.02 and 0.98, Logo Size = # Qualifying Plays",
+       y = "Average Yards Gained", x = "4th Down Success Rate", caption = "Jack Miller | data: @nflfastR")
+ggplot(team_4th, aes(x = success_rate, y = avg_yds_to_go)) +
+  geom_nfl_logos(aes(team_abbr = posteam), width = team_4th$count / 300, alpha = 0.75) +
+  geom_hline(yintercept = mean(team_4th$avg_yds_to_go), color = "red", linetype = "dashed", alpha=0.5) +
+  geom_vline(xintercept =  mean(team_4th$success_rate), color = "red", linetype = "dashed", alpha=0.5) +
+  labs(title = "4th Down Success vs. Average Yards To Go on 4th Down",
+       subtitle = "2022 NFL Games, WP between 0.02 and 0.98, Logo Size = # Qualifying Plays",
+       y = "Average Yards To Go", x = "4th Down Success Rate", caption = "Jack Miller | data: @nflfastR")
+```
+
+# 2022 Offense vs Defense EPA (Through Week 12)
+
+```{r}
+pbp_2022_epa <- pbp2022 %>%
+  filter(!is.na(posteam) & (rush == 1 | pass == 1)) %>% 
+  filter(wp > 0.02 & wp < 0.98)
+offense_2022 <- pbp_2022_epa %>%
+  dplyr::group_by(team = posteam) %>%
+  dplyr::summarise(off_epa = mean(epa, na.rm = TRUE))
+defense_2022 <- pbp_2022_epa %>%
+  dplyr::group_by(team = defteam) %>%
+  dplyr::summarise(def_epa = mean(epa, na.rm = TRUE))
+offense_2022 %>%
+  dplyr::inner_join(defense_2022, by = "team") %>%
+  ggplot2::ggplot(aes(x = off_epa, y = def_epa)) +
+  ggplot2::geom_abline(slope = -1.5, intercept = (4:-3)/10, alpha = .2) +
+  nflplotR::geom_mean_lines(aes(h_var = off_epa, v_var = def_epa)) +
+  geom_nfl_logos(aes(team_abbr = team), width = 0.05, alpha = 0.7) +
+  labs(
+    x = "Offense EPA/play",
+    y = "Defense EPA/play",
+    caption = "Jack Miller | Data: @nflfastR") +
+  ggtitle(expression(atop("2022 NFL Offensive and Defensive EPA per Play", 
+                          atop(italic("Win prob 2-98%; Downs: 1-4; Qtrs: all"), "")))) +
+  theme_bw() +
+  theme(
+    plot.title = ggplot2::element_text(size = 16, hjust = 0.5, face = "bold")
+  ) +
+  scale_y_reverse()
+```
+
+# 2022 Week 12 Team EPA
+
+```{r}
+pbp_2022_w12_epa <- pbp2022 %>%
+  filter(week == 12) %>%
+  filter(!is.na(posteam) & (rush == 1 | pass == 1)) %>% 
+  filter(wp > 0.02 & wp < 0.98)
+offense_w12 <- pbp_2022_w12_epa %>%
+  group_by(team = posteam) %>%
+  summarise(off_epa = mean(epa, na.rm = TRUE))
+defense_w12 <- pbp_2022_epa %>%
+  group_by(team = defteam) %>%
+  summarise(def_epa = mean(epa, na.rm = TRUE))
+offense_w12 %>%
+  inner_join(defense_w12, by = "team") %>%
+  ggplot(aes(x = off_epa, y = def_epa)) +
+  geom_mean_lines(aes(h_var = off_epa, v_var = def_epa)) +
+  geom_nfl_logos(aes(team_abbr = team), width = 0.05, alpha = 0.7) +
+  labs(
+    x = "Offense EPA/play",
+    y = "Defense EPA/play",
+    caption = "Jack Miller | Data: @nflfastR") +
+  ggtitle(expression(atop("2022 Week 12 NFL Offensive and Defensive EPA per Play", 
+                          atop(italic("Win prob 2-98%; Downs: 1-4; Qtrs: all"), "")))) +
+  theme_bw() +
+  theme(
+    plot.title = ggplot2::element_text(size = 16, hjust = 0.5, face = "bold")
+  ) +
+  scale_y_reverse()
 ```
 
 
